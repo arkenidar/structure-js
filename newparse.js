@@ -1,4 +1,4 @@
-var definitions={expr,if3,out1,set}
+var definitions={expr,if3,out1,set,get}
 var deferred={if3} // skip and postpone node_exec()
 var variables={}
 
@@ -8,6 +8,7 @@ function out1(arg){ console.log(arg) }
 var source, words
 
 test_sequence_basic2()
+test_sequence_basic3()
 
 function test_sequence_basic(){
 //source='if3|expr|3|==|expr|1|+|2|"Equal"|"Not-Equal"'
@@ -24,14 +25,29 @@ var sequence=[nodes_build(0)[0],nodes_build(2)[0]]
 out(sequence)
 node_exec(sequence)
 }
+
 function test_sequence_basic2(){
-source='set|"n"|1|out1|expr|n|+|10'
+    out("test_sequence_basic2()")
+source='set|"n"|1|out1|expr|get|"n"|+|10'
 words=source.split("|")
 node_exec(nodes_build(0)[0])
+out("variables", variables)
 node_exec(nodes_build(3)[0])
 }
 
+function test_sequence_basic3(){
+        out("test_sequence_basic3()")
+    source='begin|set|"n"|2|out1|get|"n"|out1|expr|get|"n"|+|10'
+    words=source.split("|")
+    var nodes=nodes_build(0)[0]
+    out(JSON.stringify(nodes)) // for debugging
+    node_exec(nodes)
+    //node_exec(nodes_build(3)[0])
+}
 
+function get(variable_name){
+    return variables[variable_name]
+}
 
 function set(variable_name,value){
     return variables[variable_name]=value
@@ -41,7 +57,6 @@ function json_parse(current){
     try{
         return JSON.parse(current)
     }catch(e){
-        if(current in variables) return variables[current]
         return current
     }    
 }
@@ -57,6 +72,18 @@ function if3(condition,case_true,case_false){
 
 function nodes_build(word_index){
     var current_word=words[word_index]
+    if(current_word=="begin"){ // sequence
+        var size=0
+        var sequence=[]
+        var cur_index=word_index+1
+        while(cur_index<words.length && words[cur_index]!="end"){
+            var [out_nodes,total_size]=nodes_build(cur_index)
+            sequence.push(out_nodes)
+            cur_index+=total_size
+            size+=total_size
+        }
+        return [sequence,size]
+    }
     if(!(current_word in definitions)) return [[json_parse(current_word)],1] // ["if3",["=",[3],["+",[1],[2]]],["Equal"],["Not-Equal"]]
     var current_arity=definitions[current_word].length
     var out_nodes=[]
@@ -82,7 +109,6 @@ function node_exec(node){
     {
         var func=node[0]
         var arity=func.length
-        ///out("func:"+func.name+"/"+func.length) // debugging
         var arg_list=[]
         for(var argi=1;argi<=arity;argi++){
             var pushed=func.name in deferred?node[argi]:node_exec(node[argi])
