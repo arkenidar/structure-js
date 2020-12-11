@@ -40,10 +40,16 @@ function test_sequence_basic3(){
     //node_exec(nodes_build(words,3)[0])
 }
 
-test_loop()
 function test_loop(){
     out("test_loop()")
     var source='begin|set|"n"|1|loop|expr|get|"n"|"<"|11|begin|out1|if3|expr|0|"=="|expr|get|"n"|"%"|2|expr|get|"n"|"+"|" numero pari"|get|"n"|set|"n"|expr|get|"n"|+|1|end'
+    exec_source(source)
+}
+
+test_loop2()
+function test_loop2(){
+    out("test_loop2()")
+    var source='begin|set|"n"|1|loop|expr|get|"n"|"<"|21|begin|out1|if3|expr|0|"=="|expr|get|"n"|"%"|15|expr|get|"n"|"+"|" FizzBuzz: multiple of both 3 and 5"|if3|expr|0|"=="|expr|get|"n"|"%"|3|expr|get|"n"|"+"|" Fizz: multiple of 3"|if3|expr|0|"=="|expr|get|"n"|"%"|5|expr|get|"n"|"+"|" Buzz: multiple of 5"|get|"n"|set|"n"|expr|get|"n"|+|1|end'
     exec_source(source)
 }
 
