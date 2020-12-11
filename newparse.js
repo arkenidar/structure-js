@@ -1,14 +1,11 @@
-var definitions={expr,if3,out1,set,get}
-var deferred={if3} // skip and postpone node_exec()
+var definitions={expr,if3,out1,set,get,loop}
+var deferred={if3,loop} // skip and postpone node_exec()
 var variables={}
 
 function out(...args){ console.log(...args) }
 function out1(arg){ console.log(arg) }
 
 var source, words
-
-test_sequence_basic2()
-test_sequence_basic3()
 
 function test_sequence_basic(){
 //source='if3|expr|3|==|expr|1|+|2|"Equal"|"Not-Equal"'
@@ -45,6 +42,20 @@ function test_sequence_basic3(){
     //node_exec(nodes_build(3)[0])
 }
 
+test_loop()
+function test_loop(){
+    out("test_loop()")
+    source='begin|set|"n"|1|loop|expr|get|"n"|"<"|11|begin|out1|if3|expr|0|"=="|expr|get|"n"|"%"|2|expr|get|"n"|"+"|" numero pari"|get|"n"|set|"n"|expr|get|"n"|+|1|end'
+    exec_source()
+}
+
+function exec_source(){
+    words=source.split("|")
+    var nodes=nodes_build(0)[0]
+    out(JSON.stringify(nodes)) // for debugging
+    node_exec(nodes)
+}
+
 function get(variable_name){
     return variables[variable_name]
 }
@@ -64,10 +75,18 @@ function json_parse(current){
 function expr(a,op,b){
   if(op=="==") return a==b
   if(op=="+") return a+b
+  if(op=="<") return a<b
+  if(op=="%") return a%b
 }
 
 function if3(condition,case_true,case_false){
     return node_exec(condition)?node_exec(case_true):node_exec(case_false)
+}
+
+function loop(condition,while_true_do_this){
+    while(node_exec(condition)){
+        node_exec(while_true_do_this)
+    }
 }
 
 function nodes_build(word_index){
