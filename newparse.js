@@ -1,4 +1,5 @@
 function out(...args){ console.log(...args) }
+function out1(arg){ console.log(arg) }
 
 var source='if3|expr|3|==|expr|1|+|2|"Equal"|"Not-Equal"'
 var words=source.split("|")
@@ -11,7 +12,8 @@ function json_parse(current){
     }    
 }
 
-var definitions={expr,if3}
+var definitions={expr,if3,out1}
+var deferred={if3} // skip and postpone node_exec()
 
 function expr(a,op,b){
   if(op=="==") return a==b
@@ -19,7 +21,7 @@ function expr(a,op,b){
 }
 
 function if3(condition,case_true,case_false){
-    return condition?case_true:case_false
+    return node_exec(condition)?node_exec(case_true):node_exec(case_false)
 }
 
 function nodes_build(word_index){
@@ -52,7 +54,8 @@ function node_exec(node){
         ///out("func:"+func.name+"/"+func.length) // debugging
         var arg_list=[]
         for(var argi=1;argi<=arity;argi++){
-            arg_list.push(node_exec(node[argi]))
+            var pushed=func.name in deferred?node[argi]:node_exec(node[argi])
+            arg_list.push(pushed)
         }
         return func(...arg_list)
     }
