@@ -1,19 +1,50 @@
+var definitions={expr,if3,out1,set}
+var deferred={if3} // skip and postpone node_exec()
+var variables={}
+
 function out(...args){ console.log(...args) }
 function out1(arg){ console.log(arg) }
 
-var source='if3|expr|3|==|expr|1|+|2|"Equal"|"Not-Equal"'
-var words=source.split("|")
+var source, words
+
+test_sequence_basic2()
+
+function test_sequence_basic(){
+//source='if3|expr|3|==|expr|1|+|2|"Equal"|"Not-Equal"'
+source='out1|10|out1|20'
+words=source.split("|")
+/*
+var nodes=nodes_build(0)
+out("result:\t",(nodes[0])) // JSON.stringify(nodes[0]) // debugging
+out("node_exec:",node_exec(nodes[0]))
+*/
+node_exec(nodes_build(0)[0])
+node_exec(nodes_build(2)[0])
+var sequence=[nodes_build(0)[0],nodes_build(2)[0]]
+out(sequence)
+node_exec(sequence)
+}
+function test_sequence_basic2(){
+source='set|"n"|1|out1|expr|n|+|10'
+words=source.split("|")
+node_exec(nodes_build(0)[0])
+node_exec(nodes_build(3)[0])
+}
+
+
+
+function set(variable_name,value){
+    return variables[variable_name]=value
+}
 
 function json_parse(current){
     try{
         return JSON.parse(current)
     }catch(e){
+        if(current in variables) return variables[current]
         return current
     }    
 }
-
-var definitions={expr,if3,out1}
-var deferred={if3} // skip and postpone node_exec()
 
 function expr(a,op,b){
   if(op=="==") return a==b
@@ -41,11 +72,11 @@ function nodes_build(word_index){
     return [out_nodes,total_size]
 }
 
-var nodes=nodes_build(0)
-out("result:\t",(nodes[0])) // JSON.stringify(nodes[0]) // debugging
-out("node_exec:",node_exec(nodes[0]))
-
 function node_exec(node){
+    if(Array.isArray(node)){
+        for(var subnode of node)
+            node_exec(subnode)
+    }
     var type=typeof node[0]
     if(type=="function")
     {
