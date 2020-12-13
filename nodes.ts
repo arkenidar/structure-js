@@ -6,7 +6,9 @@ var variables:{[key:string]:any}={}
 
 function out(...args:any[]){ console.log(...args) }
 function out1(arg:any){ console.log(arg) }
-test_loop2()
+
+//test_loop2()
+
 function test_sequence_basic(){
 //var source='if3|expr|3|==|expr|1|+|2|"Equal"|"Not-Equal"'
 var source='out1|10|out1|20'
@@ -54,8 +56,58 @@ function test_loop2(){
     exec_source(source)
 }
 
+function test_parse_split() {
+    var source1='begin|set|"n"|1|loop|expr|get|"n"|"<"|21|begin|out1|if3|expr|0|"=="|expr|get|"n"|"%"|15|expr|get|"n"|"+"|" FizzBuzz: multiple of both 3 and 5"|if3|expr|0|"=="|expr|get|"n"|"%"|3|expr|get|"n"|"+"|" Fizz: multiple of 3"|if3|expr|0|"=="|expr|get|"n"|"%"|5|expr|get|"n"|"+"|" Buzz: multiple of 5"|get|"n"|set|"n"|expr|get|"n"|+|1|end'
+    var words1=source1.split("|")
+    var source2=`
+    begin|
+    set|"n"|1|
+    loop|
+        expr|get|"n"|"<"|21|
+        
+    begin|
+        out1|
+        if3|expr|0|"=="|expr|get|"n"|"%"|15|expr|get|"n"|"+"|
+            " FizzBuzz: multiple of both 3 and 5"|
+        if3|expr|0|"=="|expr|get|"n"|"%"|3|expr|get|"n"|"+"|
+            " Fizz: multiple of 3"|
+        if3|expr|0|"=="|expr|get|"n"|"%"|5|expr|get|"n"|"+"|
+            " Buzz: multiple of 5"|
+        get|"n"|
+
+        set|"n"|expr|get|"n"|+|1|
+    end`
+    var words2=source2.split("|")
+    words2=words2.map(word=>word.trim())
+    out("split test:",JSON.stringify(words1)==JSON.stringify(words2))
+}
+
+function test_parse_split_exec() {
+    out("test_parse_split_exec()")
+    var source=`
+    begin|
+    set|"n"|1|
+    loop|
+        expr|get|"n"|"<"|21|
+        
+    begin|
+        out1|
+        if3|expr|0|"=="|expr|get|"n"|"%"|15|expr|get|"n"|"+"|
+            " FizzBuzz: multiple of both 3 and 5"|
+        if3|expr|0|"=="|expr|get|"n"|"%"|3|expr|get|"n"|"+"|
+            " Fizz: multiple of 3"|
+        if3|expr|0|"=="|expr|get|"n"|"%"|5|expr|get|"n"|"+"|
+            " Buzz: multiple of 5"|
+        get|"n"|
+
+        set|"n"|expr|get|"n"|+|1|
+    end`
+    exec_source(source)
+}
+
 function exec_source(source:string){
     var words=source.split("|")
+    words=words.map(word=>word.trim())
     var nodes=nodes_build(words,0)[0]
     var debug=false
     if(debug){
