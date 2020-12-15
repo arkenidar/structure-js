@@ -1,104 +1,12 @@
-"use strict";
-var definitions = { expr: expr, if3: if3, out1: out1, set: set, get: get, setk: setk, getk: getk, loop: loop, dont: dont, len: len };
-var deferred = { if3: if3, loop: loop, dont: dont }; // skip and postpone node_exec()
-var variables = {};
-function out() {
-    var args = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i] = arguments[_i];
-    }
-    console.log.apply(console, args);
-}
-function out1(arg) { console.log(arg); }
-//test_sequence_basic()
-function test_sequence_basic() {
-    out1("test_sequence_basic()");
-    //var source='if3|expr|3|==|expr|1|+|2|"Equal"|"Not-Equal"'
-    var source = 'out1|10|out1|20';
-    var words = source.split("|");
-    /*
-    var nodes=nodes_build(words,0)
-    out("result:\t",nodes[0])
-    out("node_exec:",node_exec(nodes[0]))
-    */
-    node_exec(nodes_build(words, 0)[0]);
-    node_exec(nodes_build(words, 2)[0]);
-    var sequence = [nodes_build(words, 0)[0], nodes_build(words, 2)[0]];
-    out(sequence);
-    node_exec(sequence);
-}
-//test_sequence_basic2()
-function test_sequence_basic2() {
-    out("test_sequence_basic2()");
-    var source = 'set|"n"|1|out1|expr|get|"n"|+|10';
-    var words = source.split("|");
-    node_exec(nodes_build(words, 0)[0]);
-    out("variables", variables);
-    node_exec(nodes_build(words, 3)[0]);
-}
-//test_sequence_basic3()
-function test_sequence_basic3() {
-    out("test_sequence_basic3()");
-    var source = 'begin|set|"n"|2|out1|get|"n"|out1|expr|get|"n"|+|10|end';
-    var words = source.split("|");
-    var nodes = nodes_build(words, 0)[0];
-    //out(JSON.stringify(nodes))
-    node_exec(nodes);
-    //node_exec(nodes_build(words,3)[0])
-}
-//test_loop()
-function test_loop() {
-    out("test_loop()");
-    var source = 'begin|set|"n"|1|loop|expr|get|"n"|"<"|11|begin|out1|if3|expr|0|"=="|expr|get|"n"|"%"|2|expr|get|"n"|"+"|" even number"|get|"n"|set|"n"|expr|get|"n"|+|1|end|end';
-    exec_source(source);
-}
-//test_loop2()
-function test_loop2() {
-    out("test_loop2()");
-    var source = 'begin|set|"n"|1|loop|expr|get|"n"|"<"|21|begin|out1|if3|expr|0|"=="|expr|get|"n"|"%"|15|expr|get|"n"|"+"|" FizzBuzz: multiple of both 3 and 5"|if3|expr|0|"=="|expr|get|"n"|"%"|3|expr|get|"n"|"+"|" Fizz: multiple of 3"|if3|expr|0|"=="|expr|get|"n"|"%"|5|expr|get|"n"|"+"|" Buzz: multiple of 5"|get|"n"|set|"n"|expr|get|"n"|+|1|end|end';
-    exec_source(source);
-}
-//test_parse_split()
-function test_parse_split() {
-    out("test_parse_split()");
-    var source1 = 'begin|set|"n"|1|loop|expr|get|"n"|"<"|21|begin|out1|if3|expr|0|"=="|expr|get|"n"|"%"|15|expr|get|"n"|"+"|" FizzBuzz: multiple of both 3 and 5"|if3|expr|0|"=="|expr|get|"n"|"%"|3|expr|get|"n"|"+"|" Fizz: multiple of 3"|if3|expr|0|"=="|expr|get|"n"|"%"|5|expr|get|"n"|"+"|" Buzz: multiple of 5"|get|"n"|set|"n"|expr|get|"n"|+|1|end|end';
-    var words1 = source1.split("|");
-    var source2 = "\n    begin|\n    set|\"n\"|1|\n    loop|\n        expr|get|\"n\"|\"<\"|21|\n        \n    begin|\n        out1|\n        if3|expr|0|\"==\"|expr|get|\"n\"|\"%\"|15|expr|get|\"n\"|\"+\"|\n            \" FizzBuzz: multiple of both 3 and 5\"|\n        if3|expr|0|\"==\"|expr|get|\"n\"|\"%\"|3|expr|get|\"n\"|\"+\"|\n            \" Fizz: multiple of 3\"|\n        if3|expr|0|\"==\"|expr|get|\"n\"|\"%\"|5|expr|get|\"n\"|\"+\"|\n            \" Buzz: multiple of 5\"|\n        get|\"n\"|\n\n        set|\"n\"|expr|get|\"n\"|+|1|\n    end|\n    end";
-    var words2 = source2.split("|");
-    words2 = words2.map(function (word) { return word.trim(); });
-    out("split test:", JSON.stringify(words1) == JSON.stringify(words2));
-}
-//test_parse_split_exec()
-function test_parse_split_exec() {
-    out("test_parse_split_exec()");
-    var source = "\n    begin|\n    set|\"n\"|1|\n    loop|\n        expr|get|\"n\"|\"<\"|21|\n        \n    begin|\n        out1|\n        if3|expr|0|\"==\"|expr|get|\"n\"|\"%\"|15|expr|get|\"n\"|\"+\"|\n            \" FizzBuzz: multiple of both 3 and 5\"|\n        if3|expr|0|\"==\"|expr|get|\"n\"|\"%\"|3|expr|get|\"n\"|\"+\"|\n            \" Fizz: multiple of 3\"|\n        if3|expr|0|\"==\"|expr|get|\"n\"|\"%\"|5|expr|get|\"n\"|\"+\"|\n            \" Buzz: multiple of 5\"|\n        get|\"n\"|\n\n        set|\"n\"|expr|get|\"n\"|+|1|\n    end|\n    end";
-    exec_source(source);
-}
-//test_multiline_strings()
-function test_multiline_strings() {
-    out("test_multiline_strings()");
-    var source = "begin|\n    out1|\"line1\nline2\"|\n    out1|line1\nline2|\n    out1|line1\nline2|end\n    ";
-    exec_source(source);
-    var words = source.split("|");
-    words = words.map(function (word) { return word.trim(); });
-    out(words);
-}
-//test_parse_less_quotes()
-function test_parse_less_quotes() {
-    out("test_parse_less_quotes()");
-    var source = "\n    begin|\n    set|n|1|\n    loop|\n        expr|get|n|<|21|\n        \n    begin|\n        out1|\n        if3|expr|0|==|expr|get|n|%|15|expr|get|n|+|\n            \" FizzBuzz: multiple of both 3 and 5\"|\n        if3|expr|0|==|expr|get|n|%|3|expr|get|n|+|\n            \" Fizz: multiple of 3\"|\n        if3|expr|0|==|expr|get|n|%|5|expr|get|n|+|\n            \" Buzz: multiple of 5\"|\n        get|n|\n\n        set|n|expr|get|n|+|1|\n    end|\n    end";
-    exec_source(source);
-}
-test_program_count();
-function test_program_count() {
-    out("test_program_count()");
-    var source = "\n    begin|\n    set|counters|{\"a\":0,\"e\":0,\"i\":0,\"o\":0,\"u\":0}|\n    set|phrase|hello everyone|\n    out1|get|phrase|\n    set|n|0|\n    out1|get|counters|\n\n    loop|expr|get|n|<|len|phrase|\n    begin|\n        dont|out1|get|n|\n        \n        set|letter|getk|get|n|phrase|\n        dont|out1|get|letter|\n        \n        set|increment|if3|expr|get|letter|in|get|counters|1|0|\n        dont|out1|get|increment|\n\n        if3|expr|1|==|get|increment|\n            setk|get|letter|counters|expr|1|+|getk|get|letter|counters|\n            pass|\n\n        set|n|expr|get|n|+|1|\n    end|\n    \n    out1|counted:|\n    out1|get|counters|\n    end\n    ";
-    exec_source(source);
-}
+var definitions = { expr, if3, out1, set, get, setk, getk, loop, dont, len };
+var deferred = { if3, loop, dont }; // skip and postpone node_exec()
+export var variables = {};
+export function out(...args) { console.log(...args); }
+export function out1(arg) { console.log(arg); }
 //=========================
-function exec_source(source) {
+export function exec_source(source) {
     var words = source.split("|");
-    words = words.map(function (word) { return word.trim(); });
+    words = words.map(word => word.trim());
     var nodes = nodes_build(words, 0)[0];
     //out(JSON.stringify(nodes,null,4))//spacing-level
     node_exec(nodes);
@@ -148,8 +56,7 @@ function loop(condition, while_true_do_this) {
 }
 function dont(node_to_ignore) { }
 //=========================================
-function nodes_build(words, word_index) {
-    var _a;
+export function nodes_build(words, word_index) {
     var current_word = words[word_index];
     var out_nodes = [];
     var total_size = 1;
@@ -158,7 +65,7 @@ function nodes_build(words, word_index) {
         var size = 1;
         var cur_index = word_index + 1;
         while (words[cur_index] != "end") {
-            _a = nodes_build(words, cur_index), out_nodes = _a[0], total_size = _a[1];
+            [out_nodes, total_size] = nodes_build(words, cur_index);
             sequence.push(out_nodes);
             size += total_size;
             cur_index += total_size;
@@ -172,14 +79,14 @@ function nodes_build(words, word_index) {
     out_nodes.push(current_word);
     word_index++;
     for (var count = 1; count <= current_arity; count++) {
-        var _b = nodes_build(words, word_index), built_node = _b[0], size = _b[1];
+        var [built_node, size] = nodes_build(words, word_index);
         out_nodes.push(built_node);
         word_index += size;
         total_size += size;
     }
     return [out_nodes, total_size];
 }
-function node_exec(node) {
+export function node_exec(node) {
     var type = typeof definitions[node[0]];
     if (type == "function") {
         var func = definitions[node[0]];
@@ -190,16 +97,14 @@ function node_exec(node) {
                 node[argi] : node_exec(node[argi]);
             arg_list.push(pushed);
         }
-        return func.apply(void 0, arg_list);
+        return func(...arg_list);
     }
     else if (Array.isArray(node)) {
-        for (var _i = 0, node_1 = node; _i < node_1.length; _i++) {
-            var subnode = node_1[_i];
+        for (var subnode of node)
             node_exec(subnode);
-        }
     }
     else {
         return node;
     }
 }
-//# sourceMappingURL=nodes.js.map
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibm9kZXMuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJub2Rlcy50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFFQSxJQUFJLFdBQVcsR0FBaUMsRUFBQyxJQUFJLEVBQUMsR0FBRyxFQUFDLElBQUksRUFBQyxHQUFHLEVBQUMsR0FBRyxFQUFDLElBQUksRUFBQyxJQUFJLEVBQUMsSUFBSSxFQUFDLElBQUksRUFBQyxHQUFHLEVBQUMsQ0FBQTtBQUMvRixJQUFJLFFBQVEsR0FBaUMsRUFBQyxHQUFHLEVBQUMsSUFBSSxFQUFDLElBQUksRUFBQyxDQUFBLENBQUMsZ0NBQWdDO0FBQzdGLE1BQU0sQ0FBQyxJQUFJLFNBQVMsR0FBb0IsRUFBRSxDQUFBO0FBRTFDLE1BQU0sVUFBVSxHQUFHLENBQUMsR0FBRyxJQUFVLElBQUcsT0FBTyxDQUFDLEdBQUcsQ0FBQyxHQUFHLElBQUksQ0FBQyxDQUFBLENBQUMsQ0FBQztBQUMxRCxNQUFNLFVBQVUsSUFBSSxDQUFDLEdBQU8sSUFBRyxPQUFPLENBQUMsR0FBRyxDQUFDLEdBQUcsQ0FBQyxDQUFBLENBQUMsQ0FBQztBQUVqRCwyQkFBMkI7QUFFM0IsTUFBTSxVQUFVLFdBQVcsQ0FBQyxNQUFhO0lBQ3JDLElBQUksS0FBSyxHQUFDLE1BQU0sQ0FBQyxLQUFLLENBQUMsR0FBRyxDQUFDLENBQUE7SUFDM0IsS0FBSyxHQUFDLEtBQUssQ0FBQyxHQUFHLENBQUMsSUFBSSxDQUFBLEVBQUUsQ0FBQSxJQUFJLENBQUMsSUFBSSxFQUFFLENBQUMsQ0FBQTtJQUNsQyxJQUFJLEtBQUssR0FBQyxXQUFXLENBQUMsS0FBSyxFQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFBO0lBQ2pDLGtEQUFrRDtJQUNsRCxTQUFTLENBQUMsS0FBSyxDQUFDLENBQUE7QUFDcEIsQ0FBQztBQUVELFNBQVMsR0FBRyxDQUFDLGFBQW9CO0lBQzdCLE9BQU8sU0FBUyxDQUFDLGFBQWEsQ0FBQyxDQUFDLE1BQU0sQ0FBQTtBQUMx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

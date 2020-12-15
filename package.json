@@ -1,0 +1,20 @@
+{
+  "name": "structure",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "",
+  "main": "Tests.js",
+  "scripts": {
+    "test": "echo 'TESTS:' && tsc && node Tests && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arkenidar/structure-js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arkenidar/structure-js/issues"
+  },
+  "homepage": "https://github.com/arkenidar/structure-js#readme"
+}
