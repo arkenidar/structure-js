@@ -1,14 +1,31 @@
 type generic_function=CallableFunction
 type node_type=any[]|any
-var definitions:{[key:string]:generic_function}={expr,if3,out1,set,get,setk,getk,loop,dont,len}
-var deferred:{[key:string]:generic_function}={if3,loop,dont} // skip and postpone node_exec()
+var definitions:{[key:string]:generic_function}={
+    expr,if3,out1,set,get,setk,getk,loop,dont,len,func,
+    arg}
+var deferred:{[key:string]:generic_function}={if3,loop,dont,func} // skip and postpone node_exec()
 export var variables:{[key:string]:any}={}
 
 export function out(...args:any[]){ console.log(...args) }
 export function out1(arg:any){ console.log(arg) }
 
 //=========================
-
+var definitions_func:{[func_name:string]:{"func_def":generic_function,"func_arity":number}}={}
+var stack:any[]=[]
+export function func(func_name:string, func_arity:number, node:node_type){
+    var func_def
+    func_def=function(...args:any[]){
+        stack.push(args)
+        var ret_value=node_exec(node)
+        stack.pop()
+        return ret_value
+    }
+    definitions_func[func_name]={func_def,func_arity}
+}
+function arg(index:number){
+    return stack[stack.length-1][index]
+}
+//==============================================
 export function exec_source(source:string){
     var words=source.split("|")
     words=words.map(word=>word.trim())
@@ -82,7 +99,7 @@ export function nodes_build(words:string[],word_index:number):[node_type[],numbe
         while(words[cur_index]!="end"){
             
             [out_nodes,total_size]=nodes_build(words,cur_index)
-            
+
             sequence.push(out_nodes)
             size+=total_size
 
@@ -91,26 +108,45 @@ export function nodes_build(words:string[],word_index:number):[node_type[],numbe
         size++
         return [sequence,size]
     }
-    if(!(current_word in definitions)) return [json_parse(current_word),1]
-    var current_arity=definitions[current_word].length
-    out_nodes.push(current_word)
-    word_index++
-    for(var count=1;count<=current_arity; count++){
-        var [built_node,size]=nodes_build(words,word_index)
-        out_nodes.push(built_node)
-        word_index+=size
-        total_size+=size
+
+    var got_function=get_function(current_word)
+    if(got_function===null){
+        // return [json_parse(current_word),1]
+        out_nodes=json_parse(current_word)
+        total_size=1
     }
+    else if(got_function!==null){
+        var current_arity=got_function.arity
+        out_nodes.push(current_word)
+        word_index++
+        for(var count=1;count<=current_arity; count++){
+            var [built_node,size]=nodes_build(words,word_index)
+            out_nodes.push(built_node)
+            word_index+=size
+            total_size+=size
+        }
+    }
+    if(out_nodes[0]==="func") node_exec(out_nodes)
     return [out_nodes,total_size]
 }
 
+function get_function(func_name:string):{func:generic_function,arity:number}|null{
+    if(typeof definitions[func_name]==="function"){
+        return {func:definitions[func_name],arity:definitions[func_name].length}
+    }else if(typeof definitions_func[func_name]==="object"){
+        return {func:definitions_func[func_name].func_def,
+            arity:definitions_func[func_name].func_arity}
+    }else
+    return null
+}
+
 export function node_exec(node:any[]):any{
-        
-    var type=typeof definitions[node[0]]
-    if(type=="function")
+    
+    var defined_function=get_function(node[0])
+    if(defined_function!==null)
     {
-        var func=definitions[node[0]]
-        var arity=func.length
+        var func=defined_function.func
+        var arity=defined_function.arity
         var arg_list=[]
         for(var argi=1;argi<=arity;argi++){
             var pushed=node[0] in deferred?

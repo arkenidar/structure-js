@@ -1,4 +1,5 @@
-import {out,out1,node_exec,nodes_build,variables,exec_source} from "./nodes.js"
+import {out,out1,node_exec,nodes_build,variables,
+    exec_source,func} from "./nodes.js"
 
 // tsc && node Tests
 // npm run test
@@ -151,7 +152,7 @@ line2|end
         exec_source(source);
     }
 
-    test_program_count();
+    //test_program_count();
     function test_program_count() {
         out("test_program_count()");
         var source = `
@@ -184,5 +185,43 @@ line2|end
     end
     `;
         exec_source(source);
+    }
+
+    //test_func_def()
+    function test_func_def(){
+        var test_node=nodes_build(["out1","success"],0)[0]
+        //node_exec(test_node) // success
+        func("func_test",0,test_node)
+        //out("definitions_func",definitions_func)
+        exec_source("func_test")
+    }
+    
+    //test_func_def_2()
+    function test_func_def_2(){
+        /*
+        var test_node=nodes_build(["out1","success1"],0)[0]
+        //node_exec(test_node) // success
+        func("func_test1",0,test_node)
+        */
+
+        exec_source(`
+        func|func_test2|0|out1|success2
+        `)
+        //out("definitions_func",definitions_func)
+        exec_source("func_test2")
+    }
+
+    test_func_def_args_1()
+    function test_func_def_args_1(){
+        // arguments tests
+        exec_source("func|func_test_arg|1|arg|0")
+        exec_source("out1|func_test_arg|abc")
+
+        exec_source(`
+        begin|
+        func|func_test_arg2|1|arg|0|
+        out1|func_test_arg2|xyz|
+        end
+        `)
     }
 }
