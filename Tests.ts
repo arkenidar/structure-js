@@ -1,5 +1,5 @@
 import {out,out1,node_exec,nodes_build,variables,
-    exec_source,func} from "./nodes.js"
+    exec_source,def_func} from "./nodes.js"
 
 // tsc && node Tests
 // npm run test
@@ -127,9 +127,9 @@ line2|end
         out(words);
     }
 
-    //test_parse_less_quotes()
+    test_parse_less_quotes()
     function test_parse_less_quotes() {
-        out("test_parse_less_quotes()");
+    out("test_parse_less_quotes()");
         var source = `
     begin|
     set|n|1|
@@ -152,9 +152,9 @@ line2|end
         exec_source(source);
     }
 
-    //test_program_count();
+    test_program_count();
     function test_program_count() {
-        out("test_program_count()");
+    out("test_program_count()");
         var source = `
     begin|
     set|counters|{"a":0,"e":0,"i":0,"o":0,"u":0}|
@@ -187,11 +187,17 @@ line2|end
         exec_source(source);
     }
 
+    out(`
+    //======================================================
+    // SECTION: function definition mechanisms.
+    // (currently very WIP)
+    `)
+    
     //test_func_def()
     function test_func_def(){
         var test_node=nodes_build(["out1","success"],0)[0]
         //node_exec(test_node) // success
-        func("func_test",0,test_node)
+        def_func("func_test",0,test_node)
         //out("definitions_func",definitions_func)
         exec_source("func_test")
     }
@@ -205,23 +211,153 @@ line2|end
         */
 
         exec_source(`
-        func|func_test2|0|out1|success2
+        def_func|func_test2|0|out1|success2
         `)
         //out("definitions_func",definitions_func)
         exec_source("func_test2")
     }
 
-    test_func_def_args_1()
+    ///test_func_def_args_1()
     function test_func_def_args_1(){
         // arguments tests
-        exec_source("func|func_test_arg|1|arg|0")
+        exec_source("def_func|func_test_arg|1|arg|0")
         exec_source("out1|func_test_arg|abc")
 
         exec_source(`
         begin|
-        func|func_test_arg2|1|arg|0|
+        def_func|func_test_arg2|1|arg|0|
         out1|func_test_arg2|xyz|
         end
         `)
     }
+    
+    //test_func_def_args_2_power()
+    function test_func_def_args_2_power(){
+        // dont|def_func|:power|1|temp-definition|
+
+        // out1|power|8|
+        // out1|call|power|8|
+        // def_func|:power|1|expr|arg|0|*|arg|0|
+        exec_source(`
+        begin|
+        
+        def_func|:power|1|expr|arg|0|*|arg|0|
+        out1|power|8|
+        end
+        `)
+    }
+
+    //test_func_def_recursive1()
+    function test_func_def_recursive1(){
+        exec_source("def_func|:factorial|1|to-be--pre-defined")
+        
+        // expr|arg|0|*|factorial|expr|arg|0|-|1
+        // arg|0
+        // factorial|0
+        // 1
+        // expr|arg|0|*|factorial|0
+        if(true){
+        exec_source(`        
+        def_func|:factorial|1|
+        if3|expr|arg|0|==|0|
+            1|
+            expr|arg|0|*|factorial|expr|arg|0|-|1
+        `)
+        }
+
+        exec_source(`
+        begin|
+
+        out1|result of factorial calc:|
+        out1|factorial|3|
+        end
+        `)
+    }
+
+    //test_func_def_recursive2()
+    function test_func_def_recursive2(){
+
+        /*
+        def_func|:factorial|1|
+        if3|expr|arg|0|==|0|
+            1|
+            expr|arg|0|*|factorial|expr|arg|0|-|1|
+        */
+
+        out("definition and use of a recursive function.")
+        exec_source(`begin|
+
+        def_func|:factorial|1|recursive-predef|
+        
+        def_func|:factorial|1|
+        if3|expr|arg|0|==|0|
+            1|
+            expr|arg|0|*|factorial|expr|arg|0|-|1|
+
+        out1|factorial calc:|
+        out1|factorial|4|
+        end`)
+    }
+    
+    //test_func_def_recursive_shortened()
+    function test_func_def_recursive_shortened(){
+
+        // messy code traces, original goal not reached,
+        // new understandings led to new goals.
+
+        ///dont|def_func|expr|:|+|arg|0|arg|1|recursive-predef|
+
+        // original goal
+        out("definition and use of a recursive function with rec_func.")
+        
+        exec_source(`begin|
+        def_func|:rec_func|2|predef|
+        def_func|:factorial|1|recursive-predef|
+        end`)
+        
+        exec_source(`begin|
+
+        def_func|:rec_func|2|begin|
+            out1|arg|0|
+            out1|arg|1|
+            dont|out1|expr|:|+|arg|0|
+            def_func|arg|0|arg|1|recursive-predef|
+        end|
+
+        
+        dont|rec_func|:factorial|1|
+
+        if3|false|
+        def_func|:factorial|1|recursive-predef|
+        do-nothing|
+
+        def_func|:factorial|1|
+        if3|expr|arg|0|==|0|
+        1|
+        expr|arg|0|*|factorial|expr|arg|0|-|1|
+
+        out1|factorial calculation:|
+        out1|factorial|4|
+
+        end`)
+    }
+
+    //arguments_test_1()
+    function arguments_test_1(){
+        var source=`
+        begin|
+
+        set|func_name|:name|
+        
+        out1|get|func_name|
+        def_func|get|func_name|0|
+            out1|called|
+        
+        name|
+
+        end`
+        exec_source(source)
+    }
+
+
 }

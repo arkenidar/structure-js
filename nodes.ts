@@ -1,9 +1,10 @@
 type generic_function=CallableFunction
 type node_type=any[]|any
 var definitions:{[key:string]:generic_function}={
-    expr,if3,out1,set,get,setk,getk,loop,dont,len,func,
-    arg}
-var deferred:{[key:string]:generic_function}={if3,loop,dont,func} // skip and postpone node_exec()
+    expr,if3,out1,set,get,setk,getk,loop,dont,len,def_func,arg}
+// defer: skip and postpone node_exec()
+var deferred:{[key:string]:generic_function}={
+    if3,loop,dont,def_func}
 export var variables:{[key:string]:any}={}
 
 export function out(...args:any[]){ console.log(...args) }
@@ -11,16 +12,19 @@ export function out1(arg:any){ console.log(arg) }
 
 //=========================
 var definitions_func:{[func_name:string]:{"func_def":generic_function,"func_arity":number}}={}
-var stack:any[]=[]
-export function func(func_name:string, func_arity:number, node:node_type){
-    var func_def
-    func_def=function(...args:any[]){
+var stack:any[]=[[]]
+export function def_func(func_name:string, func_arity:number, node:node_type){
+    
+    var arity=node_exec(func_arity)
+    if(false)out("def_func/3()",func_name, node_exec(func_name))
+
+    definitions_func[func_name.substring(1)]={func_def:func_def_inner,func_arity:arity}
+    function func_def_inner(...args:any[]){
         stack.push(args)
         var ret_value=node_exec(node)
         stack.pop()
         return ret_value
     }
-    definitions_func[func_name]={func_def,func_arity}
 }
 function arg(index:number){
     return stack[stack.length-1][index]
@@ -68,6 +72,8 @@ function expr(a:any,op:string,b:any){
   if(op=="<") return a<b
   if(op=="%") return a%b
   if(op=="in") return a in b
+  if(op=="*") return a*b
+  if(op=="-") return a-b
 }
 
 function if3(condition:node_type,case_true:node_type,case_false:node_type){
@@ -126,7 +132,10 @@ export function nodes_build(words:string[],word_index:number):[node_type[],numbe
             total_size+=size
         }
     }
-    if(out_nodes[0]==="func") node_exec(out_nodes)
+    
+    // immediate evaluation after creating such node (node of type immediate? reserved name)
+    ///if(Array.isArray(out_nodes) && out_nodes[0]=='def_func') node_exec(out_nodes)
+    
     return [out_nodes,total_size]
 }
 
@@ -140,19 +149,31 @@ function get_function(func_name:string):{func:generic_function,arity:number}|nul
     return null
 }
 
-export function node_exec(node:any[]):any{
+export function node_exec(node:node_type):any{
     
-    var defined_function=get_function(node[0])
+    var defined_function=Array.isArray(node)?get_function(node[0]):null
     if(defined_function!==null)
     {
         var func=defined_function.func
         var arity=defined_function.arity
         var arg_list=[]
+        var func_name=node[0]
         for(var argi=1;argi<=arity;argi++){
-            var pushed=node[0] in deferred?
-            node[argi]:node_exec(node[argi])
+            
+            if(false)
+            if(func_name=='def_func') //throw new Error()
+                out("node:",node)
+
+            var dont_defer_cond=(func_name=='def_func' && argi<=2)
+            //out("defer_cond",defer_cond,node[argi])
+            
+            var is_deferred:boolean=func_name in deferred
+            if(dont_defer_cond) is_deferred=false
+            
+            var pushed=is_deferred?node[argi]:node_exec(node[argi])
             arg_list.push(pushed)
         }
+        if(false)out("func_name:",func_name,"|","arg_list:",arg_list)
         return func(...arg_list)
     }
     else
