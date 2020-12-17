@@ -1,10 +1,10 @@
 type generic_function=CallableFunction
 type node_type=any[]|any
 var definitions:{[key:string]:generic_function}={
-    expr,if3,out1,set,get,setk,getk,loop,dont,len,def_func,arg}
+    expr,if3,out1,set,get,setk,getk,loop,dont,len,def_func,arg,ifunc:def_func}
 // defer: skip and postpone node_exec()
 var deferred:{[key:string]:generic_function}={
-    if3,loop,dont,def_func}
+    if3,loop,dont,def_func,ifunc:def_func}
 export var variables:{[key:string]:any}={}
 
 export function out(...args:any[]){ console.log(...args) }
@@ -133,8 +133,15 @@ export function nodes_build(words:string[],word_index:number):[node_type[],numbe
         }
     }
     
-    // immediate evaluation after creating such node (node of type immediate? reserved name)
-    ///if(Array.isArray(out_nodes) && out_nodes[0]=='def_func') node_exec(out_nodes)
+    // immediate evaluation after creating such node.
+    // implementation: node of type immediate? (reserved name) NO
+    // implementation: nodes marked with exclamation mark NO
+    // implementation: only def_func is immediately evaluated after node creation
+    if(Array.isArray(out_nodes) && out_nodes[0]=="def_func"){
+        node_exec(out_nodes) // evaluated
+        // exec only 1 time, by removing node
+        out_nodes=["def_func removed"]
+    }
     
     return [out_nodes,total_size]
 }

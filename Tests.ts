@@ -127,9 +127,9 @@ line2|end
         out(words);
     }
 
-    test_parse_less_quotes()
+    //test_parse_less_quotes()
     function test_parse_less_quotes() {
-    out("test_parse_less_quotes()");
+    out("test_parse_less_quotes() -- this is a fizzbuzz test BTW");
         var source = `
     begin|
     set|n|1|
@@ -152,7 +152,7 @@ line2|end
         exec_source(source);
     }
 
-    test_program_count();
+    //test_program_count();
     function test_program_count() {
     out("test_program_count()");
         var source = `
@@ -192,7 +192,7 @@ line2|end
     // SECTION: function definition mechanisms.
     // (currently very WIP)
     `)
-    
+
     //test_func_def()
     function test_func_def(){
         var test_node=nodes_build(["out1","success"],0)[0]
@@ -359,5 +359,59 @@ line2|end
         exec_source(source)
     }
 
+    //======================================================
+    // SECTION: new phase in working for "function definitions"
 
+    //test_immediate_mark()
+    function test_immediate_mark(){
+        
+        // ! mark not chosen as implementation/design
+        exec_source(`
+        begin|
+
+        out1|1|
+        !out1|2|
+        out1|3|
+
+
+        end
+        `)
+    }
+
+    //test_immediate_ifunc()
+    function test_immediate_ifunc(){
+        out("test_immediate_ifunc()")
+        // this is why "immediate" is necessary: for a single exec_source()
+        ///exec_source(`def_func|:test1|0|out1|test1 called`)
+        exec_source(`
+        begin|
+        def_func|:test1|0|out1|to-be-defined|
+        out1|function "test1" is defined and called|
+        test1|
+        def_func|:test1|0|out1|test1 defined again|
+        end
+        `)
+    }
+
+    test_possible_conclusion_of_phase()
+    // conclusion of function defs phase:
+    // "predef" + immediate def_func + hoisting-like + recursive + single exec_source
+    function test_possible_conclusion_of_phase(){
+        out("conclusion of function defs phase:")
+        exec_source(`
+        begin|
+        def_func|:sum|2|expr|arg|0|+|arg|1|
+        out1|expr|"sum is: "|+|sum|3|7|
+
+        def_func|:factorial|1|recursive-definition|
+        
+        out1|factorial of 4:|out1|factorial|4|
+
+        def_func|:factorial|1|
+            if3|expr|arg|0|==|0|1|
+            expr|arg|0|*|factorial|expr|arg|0|-|1|
+        
+        end
+        `)
+    }
 }
