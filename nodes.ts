@@ -139,8 +139,8 @@ export function nodes_build(words:string[],word_index:number):[node_type[],numbe
     // implementation: only def_func is immediately evaluated after node creation
     if(Array.isArray(out_nodes) && out_nodes[0]=="def_func"){
         node_exec(out_nodes) // evaluated
-        // exec only 1 time, by removing node
-        out_nodes=["def_func removed"]
+        // exec only 1 time, by removing node, or ignoring it
+        out_nodes=["dont",out_nodes] // kept but ignored node
     }
     
     return [out_nodes,total_size]
