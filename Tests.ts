@@ -393,7 +393,7 @@ line2|end
         `)
     }
 
-    test_possible_conclusion_of_phase()
+    //test_possible_conclusion_of_phase()
     // conclusion of function defs phase:
     // "predef" + immediate def_func + hoisting-like + recursive + single exec_source
     function test_possible_conclusion_of_phase(){
@@ -413,5 +413,49 @@ line2|end
         
         end
         `)
+    }
+
+    // improving on the need to use 
+    // "special" colon function names
+    // like :factorial
+    beyond_colons_trick_1()
+    beyond_colons_trick_2()
+    function beyond_colons_trick_1(){
+        // this doesn't require colon trick
+        // without other changes
+        exec_source(`
+        begin|
+        def_func|sum|2|expr|arg|0|+|arg|1|
+        out1|expr|"sum is: "|+|sum|3|7|
+        end`)
+    }
+
+    // (continued) improving on the need to use 
+    // "special" colon function names
+    // like :factorial
+    function beyond_colons_trick_2(){
+        // this required colon trick.
+        // now this doesn't require colon trick anymore
+        // by using the JSON "quoted" string
+        // and no other change, arrangement,
+        // nor a feared ;) restructuring of intepreter.
+        // I am not sure but quotes ala JSON could 
+        // have worked before in this special case ...
+        // maybe without going the colon trick path
+        // (which I reversed).
+        // so less special syntax. :)
+        // it seemed a special case but it's not special
+        // (unerstanding helps... and use testing too)
+        exec_source(`
+        begin|
+        def_func|factorial|1|recursive-definition|
+        
+        out1|factorial of 4:|out1|factorial|4|
+
+        def_func|"factorial"|1|
+            if3|expr|arg|0|==|0|1|
+            expr|arg|0|*|factorial|expr|arg|0|-|1|
+        
+        end`)
     }
 }

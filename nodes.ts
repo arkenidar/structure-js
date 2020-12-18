@@ -18,7 +18,8 @@ export function def_func(func_name:string, func_arity:number, node:node_type){
     var arity=node_exec(func_arity)
     if(false)out("def_func/3()",func_name, node_exec(func_name))
 
-    definitions_func[func_name.substring(1)]={func_def:func_def_inner,func_arity:arity}
+    // REMOVED: func_name.substring(1) for colon name trick :name
+    definitions_func[func_name]={func_def:func_def_inner,func_arity:arity}
     function func_def_inner(...args:any[]){
         stack.push(args)
         var ret_value=node_exec(node)
