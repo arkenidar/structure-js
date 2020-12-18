@@ -445,7 +445,7 @@ line2|end
         // (which I reversed).
         // so less special syntax. :)
         // it seemed a special case but it's not special
-        // (unerstanding helps... and use testing too)
+        // (understanding helps... and use of testing too)
         exec_source(`
         begin|
         def_func|factorial|1|recursive-definition|
