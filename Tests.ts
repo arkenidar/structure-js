@@ -187,7 +187,7 @@ line2|end
         exec_source(source);
     }
 
-    out(`
+    if(false)out(`
     //======================================================
     // SECTION: function definition mechanisms.
     // (currently very WIP)
@@ -418,8 +418,8 @@ line2|end
     // improving on the need to use 
     // "special" colon function names
     // like :factorial
-    beyond_colons_trick_1()
-    beyond_colons_trick_2()
+    //beyond_colons_trick_1()
+    //beyond_colons_trick_2()
     function beyond_colons_trick_1(){
         // this doesn't require colon trick
         // without other changes
@@ -457,5 +457,17 @@ line2|end
             expr|arg|0|*|factorial|expr|arg|0|-|1|
         
         end`)
+    }
+
+    demo()
+    function demo(){
+
+        test_program_count()
+        
+        beyond_colons_trick_1()
+        beyond_colons_trick_2()
+    
+        test_parse_less_quotes()
+        
     }
 }
