@@ -468,6 +468,22 @@ line2|end
         beyond_colons_trick_2()
     
         test_parse_less_quotes()
+
+        fibonacci()
         
+    }
+
+    function fibonacci(){
+        exec_source(`begin|
+        out1|fibonacci algorithm|
+        set|x|0|set|y|1|
+        loop|expr|get|x|<|256|
+        begin|
+            out1|get|x|
+            set|z|expr|get|x|+|get|y|
+            set|x|get|y|
+            set|y|get|z|
+            end|
+        end`)
     }
 }
