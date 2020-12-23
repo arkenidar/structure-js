@@ -1,4 +1,4 @@
-import {out,out1,node_exec,nodes_build,variables,
+import {out,out1,node_exec,nodes_build,
     exec_source,def_func} from "./nodes.js"
 
 // tsc && node Tests
@@ -29,7 +29,7 @@ module Tests {
         var source = 'set|"n"|1|out1|expr|get|"n"|+|10';
         var words = source.split("|");
         node_exec(nodes_build(words, 0)[0]);
-        out("variables", variables);
+        //out("variables", variables); // currently: stack_top()
         node_exec(nodes_build(words, 3)[0]);
     }
 

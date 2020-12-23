@@ -5,14 +5,14 @@ var definitions:{[key:string]:generic_function}={
 // defer: skip and postpone node_exec()
 var deferred:{[key:string]:generic_function}={
     if3,loop,dont,def_func,ifunc:def_func}
-export var variables:{[key:string]:any}={}
+//export var variables:{[key:string]:any}={}
 
 export function out(...args:any[]){ console.log(...args) }
 export function out1(arg:any){ console.log(arg) }
 
 //=========================
 var definitions_func:{[func_name:string]:{"func_def":generic_function,"func_arity":number}}={}
-var stack:any[]=[[]]
+var stack:any[]=[{}]
 export function def_func(func_name:string, func_arity:number, node:node_type){
     
     var arity=node_exec(func_arity)
@@ -27,8 +27,11 @@ export function def_func(func_name:string, func_arity:number, node:node_type){
         return ret_value
     }
 }
+function stack_top(){
+    return stack[stack.length-1]
+}
 function arg(index:number){
-    return stack[stack.length-1][index]
+    return stack_top()[index]
 }
 //==============================================
 export function exec_source(source:string){
@@ -40,23 +43,23 @@ export function exec_source(source:string){
 }
 
 function len(variable_name:string):number{
-    return variables[variable_name].length
+    return stack_top()[variable_name].length
 }
 
 function get(variable_name:string):any{
-    return variables[variable_name]
+    return stack_top()[variable_name]
 }
 
 function set(variable_name:string,value:any){
-    return variables[variable_name]=value
+    return stack_top()[variable_name]=value
 }
 
 function getk(key:any,variable_name:string):any{
-    return variables[variable_name][key]
+    return stack_top()[variable_name][key]
 }
 
 function setk(key:any,variable_name:string,value:any){
-    return variables[variable_name][key]=value
+    return stack_top()[variable_name][key]=value
 }
 
 function json_parse(current:string){
